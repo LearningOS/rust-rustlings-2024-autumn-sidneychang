@@ -2,8 +2,6 @@
     single linked list merge
     This problem requires you to merge two ordered singly linked lists into one ordered singly linked list
 */
-// I AM NOT DONE
-
 use std::fmt::{self, Display, Formatter};
 use std::ptr::NonNull;
 use std::vec::*;
@@ -66,12 +64,50 @@ impl<T> LinkedList<T> {
             },
         }
     }
+}
+
+impl<T: Ord> LinkedList<T> {
     pub fn merge(list_a: LinkedList<T>, list_b: LinkedList<T>) -> Self {
-        //TODO
+        let mut head = None;
+        let mut current: Option<NonNull<Node<T>>> = None;
+        let mut current_a = list_a.start;
+        let mut current_b = list_b.start;
+
+        loop {
+            let node = match (current_a, current_b) {
+                (None, None) => break,
+                (Some(a), None) => {
+                    current_a = unsafe { (*a.as_ptr()).next };
+                    a
+                }
+                (None, Some(b)) => {
+                    current_b = unsafe { (*b.as_ptr()).next };
+                    b
+                }
+                (Some(a), Some(b)) => {
+                    if unsafe { a.as_ref().val < b.as_ref().val } {
+                        current_a = unsafe { (*a.as_ptr()).next };
+                        a
+                    } else {
+                        current_b = unsafe { (*b.as_ptr()).next };
+                        b
+                    }
+                }
+            };
+            if current.is_some() {
+                unsafe {
+                    (*current.unwrap().as_ptr()).next = Some(node);
+                }
+            }
+            current = Some(node);
+            if head.is_none() {
+                head = current.clone();
+            }
+        }
         Self {
-            length: 0,
-            start: None,
-            end: None,
+            length: list_a.length + list_b.length,
+            start: head,
+            end: current,
         }
     }
 }
